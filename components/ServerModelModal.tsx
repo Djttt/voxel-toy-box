@@ -19,11 +19,13 @@ export const ServerModelModal: React.FC<ServerModelModalProps> = ({
     const [models, setModels] = useState<ServerModelInfo[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
     const t = TRANSLATIONS[language];
 
     useEffect(() => {
         if (isOpen) {
             loadModels();
+            setSearchTerm('');
         }
     }, [isOpen]);
 
@@ -41,6 +43,10 @@ export const ServerModelModal: React.FC<ServerModelModalProps> = ({
         }
     };
 
+    const filteredModels = models.filter(model =>
+        model.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     if (!isOpen) return null;
 
     return (
@@ -48,8 +54,8 @@ export const ServerModelModal: React.FC<ServerModelModalProps> = ({
             <div className="bg-white/95 backdrop-blur-md w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[80vh] border border-white/20">
 
                 {/* Header */}
-                <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white/50">
-                    <div className="flex items-center gap-4 text-slate-800">
+                <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white/50 gap-4">
+                    <div className="flex items-center gap-4 text-slate-800 shrink-0">
                         <div className="bg-gradient-to-br from-indigo-500 to-violet-600 p-3 rounded-2xl text-white shadow-lg shadow-indigo-500/20">
                             <Server size={24} />
                         </div>
@@ -58,9 +64,24 @@ export const ServerModelModal: React.FC<ServerModelModalProps> = ({
                             <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-0.5">{t.browseLoad}</p>
                         </div>
                     </div>
+
+                    {/* Search Bar */}
+                    <div className="flex-1 max-w-md relative group">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+                            <Search size={20} />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder={t.searchPlaceholder}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-10 pr-4 py-3 bg-slate-100/50 border-2 border-slate-200 rounded-xl outline-none focus:border-indigo-500 focus:bg-white transition-all font-bold text-slate-700 placeholder:text-slate-400"
+                        />
+                    </div>
+
                     <button
                         onClick={onClose}
-                        className="p-2.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                        className="p-2.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors shrink-0"
                     >
                         <X size={24} />
                     </button>
@@ -83,14 +104,14 @@ export const ServerModelModal: React.FC<ServerModelModalProps> = ({
                             </div>
                             <div className="font-bold">{error}</div>
                         </div>
-                    ) : models.length === 0 ? (
+                    ) : filteredModels.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-4">
                             <Search size={48} strokeWidth={1.5} className="opacity-50" />
                             <div className="font-bold">{t.noModels}</div>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {models.map((model) => (
+                            {filteredModels.map((model) => (
                                 <button
                                     key={model.id}
                                     onClick={() => onSelectModel(model.id)}
@@ -142,7 +163,7 @@ export const ServerModelModal: React.FC<ServerModelModalProps> = ({
                 {/* Footer */}
                 <div className="px-8 py-5 bg-white border-t border-slate-100 flex justify-between items-center">
                     <div className="text-xs font-bold text-slate-400">
-                        {models.length} {models.length === 1 ? 'Model' : 'Models'} Available
+                        {filteredModels.length} {filteredModels.length === 1 ? 'Model' : 'Models'} Available
                     </div>
                     <button
                         onClick={onClose}

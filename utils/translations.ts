@@ -88,6 +88,7 @@ export const TRANSLATIONS = {
     namePlaceholder: "e.g., Cool Spaceship",
     uploadBtn: "Upload",
     uploading: "Uploading...",
+    searchPlaceholder: "Search models...",
   },
   zh: {
     // UIOverlay
@@ -171,5 +172,6 @@ export const TRANSLATIONS = {
     namePlaceholder: "例如：炫酷飞船",
     uploadBtn: "上传",
     uploading: "正在上传...",
+    searchPlaceholder: "搜索模型..."
   }
 };
