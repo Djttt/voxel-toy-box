@@ -30,12 +30,12 @@ export const TRANSLATIONS = {
     langName: "中文", // Label to switch TO
     // Loading
     loadingMessages: [
-        "Crafting voxels...",
-        "Designing structure...",
-        "Calculating physics...",
-        "Mixing colors...",
-        "Assembling geometry...",
-        "Applying polish..."
+      "Crafting voxels...",
+      "Designing structure...",
+      "Calculating physics...",
+      "Mixing colors...",
+      "Assembling geometry...",
+      "Applying polish..."
     ],
     geminiBuilding: "Gemini is Building...",
     // WelcomeScreen
@@ -69,7 +69,25 @@ export const TRANSLATIONS = {
     emptyJson: "Please paste JSON data first.",
     // App Alerts
     alertImportFail: "Failed to import JSON. Please ensure the format is correct.",
-    alertGenFail: "Oops! Something went wrong generating the model."
+    alertGenFail: "Oops! Something went wrong generating the model.",
+    // Server
+    server: "Server",
+    uploadToServer: "Upload to Server",
+    browseServer: "Browse Server",
+    enterModelName: "Enter model name:",
+    uploadSuccess: "Uploaded successfully!",
+    uploadFail: "Failed to upload model.",
+    loadFail: "Failed to load model from server.",
+    serverModels: "Server Models",
+    browseLoad: "Browse & Load",
+    loadingLibrary: "Loading Library...",
+    noModels: "No models found on server.",
+    // UploadModal
+    uploadTitle: "Save to Cloud",
+    modelName: "Model Name",
+    namePlaceholder: "e.g., Cool Spaceship",
+    uploadBtn: "Upload",
+    uploading: "Uploading...",
   },
   zh: {
     // UIOverlay
@@ -95,12 +113,12 @@ export const TRANSLATIONS = {
     langName: "English", // Label to switch TO
     // Loading
     loadingMessages: [
-        "正在制作体素...",
-        "正在设计结构...",
-        "正在计算物理...",
-        "正在混合颜色...",
-        "正在组装几何体...",
-        "正在打磨细节..."
+      "正在制作体素...",
+      "正在设计结构...",
+      "正在计算物理...",
+      "正在混合颜色...",
+      "正在组装几何体...",
+      "正在打磨细节..."
     ],
     geminiBuilding: "Gemini 正在构建...",
     // WelcomeScreen
@@ -134,6 +152,24 @@ export const TRANSLATIONS = {
     emptyJson: "请先粘贴 JSON 数据。",
     // App Alerts
     alertImportFail: "无法导入 JSON。请确保格式正确。",
-    alertGenFail: "哎呀！生成模型时出了点问题。"
+    alertGenFail: "哎呀！生成模型时出了点问题。",
+    // Server
+    server: "服务器",
+    uploadToServer: "上传到服务器",
+    browseServer: "浏览服务器",
+    enterModelName: "请输入模型名称：",
+    uploadSuccess: "上传成功！",
+    uploadFail: "上传模型失败。",
+    loadFail: "从服务器加载模型失败。",
+    serverModels: "服务器模型",
+    browseLoad: "浏览与加载",
+    loadingLibrary: "正在加载库...",
+    noModels: "服务器上没有找到模型。",
+    // UploadModal
+    uploadTitle: "保存到云端",
+    modelName: "模型名称",
+    namePlaceholder: "例如：炫酷飞船",
+    uploadBtn: "上传",
+    uploading: "正在上传...",
   }
 };

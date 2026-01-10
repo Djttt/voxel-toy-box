@@ -6,285 +6,294 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { AppState, SavedModel } from '../types';
-import { Box, Bird, Cat, Rabbit, Users, Code2, Wand2, Hammer, FolderOpen, ChevronUp, FileJson, History, Play, Pause, Info, Wrench, Loader2, Globe } from 'lucide-react';
+import { Box, Bird, Cat, Rabbit, Users, Code2, Wand2, Hammer, FolderOpen, ChevronUp, FileJson, History, Play, Pause, Info, Wrench, Loader2, Globe, Cloud, Upload } from 'lucide-react';
 import { Language, TRANSLATIONS } from '../utils/translations';
 
 interface UIOverlayProps {
-  voxelCount: number;
-  appState: AppState;
-  currentBaseModel: string;
-  customBuilds: SavedModel[];
-  customRebuilds: SavedModel[];
-  isAutoRotate: boolean;
-  isInfoVisible: boolean;
-  isGenerating: boolean;
-  language: Language;
-  onDismantle: () => void;
-  onRebuild: (type: 'Eagle' | 'Cat' | 'Rabbit' | 'Twins') => void;
-  onNewScene: (type: 'Eagle') => void;
-  onSelectCustomBuild: (model: SavedModel) => void;
-  onSelectCustomRebuild: (model: SavedModel) => void;
-  onPromptCreate: () => void;
-  onPromptMorph: () => void;
-  onShowJson: () => void;
-  onImportJson: () => void;
-  onToggleRotation: () => void;
-  onToggleInfo: () => void;
-  onToggleLanguage: () => void;
+    voxelCount: number;
+    appState: AppState;
+    currentBaseModel: string;
+    customBuilds: SavedModel[];
+    customRebuilds: SavedModel[];
+    isAutoRotate: boolean;
+    isInfoVisible: boolean;
+    isGenerating: boolean;
+    language: Language;
+    onDismantle: () => void;
+    onRebuild: (type: 'Eagle' | 'Cat' | 'Rabbit' | 'Twins') => void;
+    onNewScene: (type: 'Eagle') => void;
+    onSelectCustomBuild: (model: SavedModel) => void;
+    onSelectCustomRebuild: (model: SavedModel) => void;
+    onPromptCreate: () => void;
+    onPromptMorph: () => void;
+    onShowJson: () => void;
+    onImportJson: () => void;
+    onToggleRotation: () => void;
+    onToggleInfo: () => void;
+    onToggleLanguage: () => void;
+    onUpload: () => void;
+    onBrowseServer: () => void;
 }
 
 export const UIOverlay: React.FC<UIOverlayProps> = ({
-  voxelCount,
-  appState,
-  currentBaseModel,
-  customBuilds,
-  customRebuilds,
-  isAutoRotate,
-  isInfoVisible,
-  isGenerating,
-  language,
-  onDismantle,
-  onRebuild,
-  onNewScene,
-  onSelectCustomBuild,
-  onSelectCustomRebuild,
-  onPromptCreate,
-  onPromptMorph,
-  onShowJson,
-  onImportJson,
-  onToggleRotation,
-  onToggleInfo,
-  onToggleLanguage
+    voxelCount,
+    appState,
+    currentBaseModel,
+    customBuilds,
+    customRebuilds,
+    isAutoRotate,
+    isInfoVisible,
+    isGenerating,
+    language,
+    onDismantle,
+    onRebuild,
+    onNewScene,
+    onSelectCustomBuild,
+    onSelectCustomRebuild,
+    onPromptCreate,
+    onPromptMorph,
+    onShowJson,
+    onImportJson,
+    onToggleRotation,
+    onToggleInfo,
+    onToggleLanguage,
+    onUpload,
+    onBrowseServer
 }) => {
-  const isStable = appState === AppState.STABLE;
-  const isDismantling = appState === AppState.DISMANTLING;
-  const t = TRANSLATIONS[language];
-  
-  const [loadingMsgIndex, setLoadingMsgIndex] = useState(0);
+    const isStable = appState === AppState.STABLE;
+    const isDismantling = appState === AppState.DISMANTLING;
+    const t = TRANSLATIONS[language];
 
-  useEffect(() => {
-    if (isGenerating) {
-        const interval = setInterval(() => {
-            setLoadingMsgIndex((prev) => (prev + 1) % t.loadingMessages.length);
-        }, 2000);
-        return () => clearInterval(interval);
-    } else {
-        setLoadingMsgIndex(0);
-    }
-  }, [isGenerating, t.loadingMessages.length]);
-  
-  // Only show default presets if the current model is the original Eagle
-  const isEagle = currentBaseModel === 'Eagle';
+    const [loadingMsgIndex, setLoadingMsgIndex] = useState(0);
 
-  return (
-    <div className="absolute top-0 left-0 w-full h-full pointer-events-none select-none">
-      
-      {/* --- Top Bar (Stats & Tools) --- */}
-      <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
-        
-        {/* Global Scene Controls */}
-        <div className="pointer-events-auto flex flex-col gap-2">
-            <DropdownMenu 
-                icon={<FolderOpen size={20} />}
-                label={t.builds}
-                color="indigo"
-            >
-                <div className="px-2 py-1 text-xs font-bold text-slate-400 uppercase tracking-wider">{t.newBuilds}</div>
-                <DropdownItem onClick={() => onNewScene('Eagle')} icon={<Bird size={16}/>} label={t.eagle} />
-                <DropdownItem onClick={onPromptCreate} icon={<Wand2 size={16}/>} label={t.newBuild} highlight />
-                <div className="h-px bg-slate-100 my-1" />
-                
-                {customBuilds.length > 0 && (
-                    <>
-                        <div className="px-2 py-1 text-xs font-bold text-slate-400 uppercase tracking-wider">{t.yourCreations}</div>
-                        {customBuilds.map((model, idx) => (
-                            <DropdownItem 
-                                key={`build-${idx}`} 
-                                onClick={() => onSelectCustomBuild(model)} 
-                                icon={<History size={16}/>} 
-                                label={model.name} 
-                                truncate
-                            />
-                        ))}
+    useEffect(() => {
+        if (isGenerating) {
+            const interval = setInterval(() => {
+                setLoadingMsgIndex((prev) => (prev + 1) % t.loadingMessages.length);
+            }, 2000);
+            return () => clearInterval(interval);
+        } else {
+            setLoadingMsgIndex(0);
+        }
+    }, [isGenerating, t.loadingMessages.length]);
+
+    // Only show default presets if the current model is the original Eagle
+    const isEagle = currentBaseModel === 'Eagle';
+
+    return (
+        <div className="absolute top-0 left-0 w-full h-full pointer-events-none select-none">
+
+            {/* --- Top Bar (Stats & Tools) --- */}
+            <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
+
+                {/* Global Scene Controls */}
+                <div className="pointer-events-auto flex flex-col gap-2">
+                    <DropdownMenu
+                        icon={<FolderOpen size={20} />}
+                        label={t.builds}
+                        color="indigo"
+                    >
+                        <div className="px-2 py-1 text-xs font-bold text-slate-400 uppercase tracking-wider">{t.newBuilds}</div>
+                        <DropdownItem onClick={() => onNewScene('Eagle')} icon={<Bird size={16} />} label={t.eagle} />
+                        <DropdownItem onClick={onPromptCreate} icon={<Wand2 size={16} />} label={t.newBuild} highlight />
                         <div className="h-px bg-slate-100 my-1" />
-                    </>
-                )}
 
-                <DropdownItem onClick={onImportJson} icon={<FileJson size={16}/>} label={t.importJson} />
-            </DropdownMenu>
-
-            <div className="flex items-center gap-3 px-4 py-2 bg-white/90 backdrop-blur-sm shadow-sm rounded-xl border border-slate-200 text-slate-500 font-bold w-fit mt-2">
-                <div className="bg-blue-100 p-1.5 rounded-lg text-blue-600">
-                    <Box size={16} strokeWidth={3} />
-                </div>
-                <div className="flex flex-col leading-none">
-                    <span className="text-[10px] uppercase tracking-wider opacity-60">{t.voxels}</span>
-                    <span className="text-lg text-slate-800 font-extrabold font-mono">{voxelCount}</span>
-                </div>
-            </div>
-        </div>
-
-        {/* Utilities */}
-        <div className="pointer-events-auto flex gap-2">
-            <TactileButton
-                onClick={onToggleLanguage}
-                color="slate"
-                icon={<Globe size={18} strokeWidth={2.5} />}
-                label={t.langName}
-                compact={false}
-            />
-            <TactileButton
-                onClick={onToggleInfo}
-                color={isInfoVisible ? 'indigo' : 'slate'}
-                icon={<Info size={18} strokeWidth={2.5} />}
-                label={t.info}
-                compact
-            />
-            <TactileButton
-                onClick={onToggleRotation}
-                color={isAutoRotate ? 'sky' : 'slate'}
-                icon={isAutoRotate ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
-                label={isAutoRotate ? t.pauseCam : t.playCam}
-                compact
-            />
-            <TactileButton
-                onClick={onShowJson}
-                color="slate"
-                icon={<Code2 size={18} strokeWidth={2.5} />}
-                label={t.share}
-            />
-        </div>
-      </div>
-
-      {/* --- Loading Indicator --- */}
-      {isGenerating && (
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 animate-in fade-in zoom-in duration-300">
-              <div className="bg-white/90 backdrop-blur-md border-2 border-indigo-100 px-8 py-6 rounded-3xl shadow-2xl flex flex-col items-center gap-4 min-w-[280px]">
-                  <div className="relative">
-                      <div className="absolute inset-0 bg-indigo-200 rounded-full animate-ping opacity-20"></div>
-                      <Loader2 size={48} className="text-indigo-500 animate-spin" />
-                  </div>
-                  <div className="text-center">
-                      <h3 className="text-lg font-extrabold text-slate-800">{t.geminiBuilding}</h3>
-                      <p className="text-slate-500 font-bold text-sm transition-all duration-300">
-                          {t.loadingMessages[loadingMsgIndex]}
-                      </p>
-                  </div>
-              </div>
-          </div>
-      )}
-
-      {/* --- Bottom Control Center --- */}
-      <div className="absolute bottom-8 left-0 w-full flex justify-center items-end pointer-events-none">
-        
-        <div className="pointer-events-auto transition-all duration-500 ease-in-out transform">
-            
-            {/* STATE 1: STABLE -> DISMANTLE */}
-            {isStable && (
-                 <div className="animate-in slide-in-from-bottom-10 fade-in duration-300">
-                     <BigActionButton 
-                        onClick={onDismantle} 
-                        icon={<Hammer size={32} strokeWidth={2.5} />} 
-                        label={t.break} 
-                        color="rose" 
-                     />
-                 </div>
-            )}
-
-            {/* STATE 2: DISMANTLED -> REBUILD */}
-            {/* Hide this menu if we are actively rebuilding (animating) or if we are generating new content */}
-            {isDismantling && !isGenerating && (
-                <div className="flex items-end gap-4 animate-in slide-in-from-bottom-10 fade-in duration-300">
-                     <DropdownMenu 
-                        icon={<Wrench size={24} />}
-                        label={t.rebuild}
-                        color="emerald"
-                        direction="up"
-                        big
-                     >
-                        <div className="px-2 py-1 text-xs font-bold text-slate-400 uppercase tracking-wider">{t.rebuildMenu}</div>
-                        
-                        {/* Standard Presets - Only for Eagle */}
-                        {isEagle && (
+                        {customBuilds.length > 0 && (
                             <>
-                                <DropdownItem onClick={() => onRebuild('Cat')} icon={<Cat size={18}/>} label={t.cat} />
-                                <DropdownItem onClick={() => onRebuild('Rabbit')} icon={<Rabbit size={18}/>} label={t.rabbit} />
-                                <DropdownItem onClick={() => onRebuild('Twins')} icon={<Users size={18}/>} label={t.twins} />
-                                <div className="h-px bg-slate-100 my-1" />
-                            </>
-                        )}
-
-                        {/* Custom Rebuilds */}
-                        {customRebuilds.length > 0 && (
-                            <>
-                                <div className="px-2 py-1 text-xs font-bold text-slate-400 uppercase tracking-wider">{t.customRebuilds}</div>
-                                {customRebuilds.map((model, idx) => (
-                                    <DropdownItem 
-                                        key={`rebuild-${idx}`} 
-                                        onClick={() => onSelectCustomRebuild(model)} 
-                                        icon={<History size={18}/>} 
+                                <div className="px-2 py-1 text-xs font-bold text-slate-400 uppercase tracking-wider">{t.yourCreations}</div>
+                                {customBuilds.map((model, idx) => (
+                                    <DropdownItem
+                                        key={`build-${idx}`}
+                                        onClick={() => onSelectCustomBuild(model)}
+                                        icon={<History size={16} />}
                                         label={model.name}
-                                        truncate 
+                                        truncate
                                     />
                                 ))}
                                 <div className="h-px bg-slate-100 my-1" />
                             </>
                         )}
 
-                        <DropdownItem onClick={onPromptMorph} icon={<Wand2 size={18}/>} label={t.newRebuild} highlight />
-                     </DropdownMenu>
+                        <DropdownItem onClick={onImportJson} icon={<FileJson size={16} />} label={t.importJson} />
+
+                        <div className="h-px bg-slate-100 my-1" />
+                        <div className="px-2 py-1 text-xs font-bold text-slate-400 uppercase tracking-wider">{t.server}</div>
+                        <DropdownItem onClick={onUpload} icon={<Upload size={16} />} label={t.uploadToServer} />
+                        <DropdownItem onClick={onBrowseServer} icon={<Cloud size={16} />} label={t.browseServer} />
+                    </DropdownMenu>
+
+                    <div className="flex items-center gap-3 px-4 py-2 bg-white/90 backdrop-blur-sm shadow-sm rounded-xl border border-slate-200 text-slate-500 font-bold w-fit mt-2">
+                        <div className="bg-blue-100 p-1.5 rounded-lg text-blue-600">
+                            <Box size={16} strokeWidth={3} />
+                        </div>
+                        <div className="flex flex-col leading-none">
+                            <span className="text-[10px] uppercase tracking-wider opacity-60">{t.voxels}</span>
+                            <span className="text-lg text-slate-800 font-extrabold font-mono">{voxelCount}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Utilities */}
+                <div className="pointer-events-auto flex gap-2">
+                    <TactileButton
+                        onClick={onToggleLanguage}
+                        color="slate"
+                        icon={<Globe size={18} strokeWidth={2.5} />}
+                        label={t.langName}
+                        compact={false}
+                    />
+                    <TactileButton
+                        onClick={onToggleInfo}
+                        color={isInfoVisible ? 'indigo' : 'slate'}
+                        icon={<Info size={18} strokeWidth={2.5} />}
+                        label={t.info}
+                        compact
+                    />
+                    <TactileButton
+                        onClick={onToggleRotation}
+                        color={isAutoRotate ? 'sky' : 'slate'}
+                        icon={isAutoRotate ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
+                        label={isAutoRotate ? t.pauseCam : t.playCam}
+                        compact
+                    />
+                    <TactileButton
+                        onClick={onShowJson}
+                        color="slate"
+                        icon={<Code2 size={18} strokeWidth={2.5} />}
+                        label={t.share}
+                    />
+                </div>
+            </div>
+
+            {/* --- Loading Indicator --- */}
+            {isGenerating && (
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 animate-in fade-in zoom-in duration-300">
+                    <div className="bg-white/90 backdrop-blur-md border-2 border-indigo-100 px-8 py-6 rounded-3xl shadow-2xl flex flex-col items-center gap-4 min-w-[280px]">
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-indigo-200 rounded-full animate-ping opacity-20"></div>
+                            <Loader2 size={48} className="text-indigo-500 animate-spin" />
+                        </div>
+                        <div className="text-center">
+                            <h3 className="text-lg font-extrabold text-slate-800">{t.geminiBuilding}</h3>
+                            <p className="text-slate-500 font-bold text-sm transition-all duration-300">
+                                {t.loadingMessages[loadingMsgIndex]}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             )}
-        </div>
-      </div>
 
-    </div>
-  );
+            {/* --- Bottom Control Center --- */}
+            <div className="absolute bottom-8 left-0 w-full flex justify-center items-end pointer-events-none">
+
+                <div className="pointer-events-auto transition-all duration-500 ease-in-out transform">
+
+                    {/* STATE 1: STABLE -> DISMANTLE */}
+                    {isStable && (
+                        <div className="animate-in slide-in-from-bottom-10 fade-in duration-300">
+                            <BigActionButton
+                                onClick={onDismantle}
+                                icon={<Hammer size={32} strokeWidth={2.5} />}
+                                label={t.break}
+                                color="rose"
+                            />
+                        </div>
+                    )}
+
+                    {/* STATE 2: DISMANTLED -> REBUILD */}
+                    {/* Hide this menu if we are actively rebuilding (animating) or if we are generating new content */}
+                    {isDismantling && !isGenerating && (
+                        <div className="flex items-end gap-4 animate-in slide-in-from-bottom-10 fade-in duration-300">
+                            <DropdownMenu
+                                icon={<Wrench size={24} />}
+                                label={t.rebuild}
+                                color="emerald"
+                                direction="up"
+                                big
+                            >
+                                <div className="px-2 py-1 text-xs font-bold text-slate-400 uppercase tracking-wider">{t.rebuildMenu}</div>
+
+                                {/* Standard Presets - Only for Eagle */}
+                                {isEagle && (
+                                    <>
+                                        <DropdownItem onClick={() => onRebuild('Cat')} icon={<Cat size={18} />} label={t.cat} />
+                                        <DropdownItem onClick={() => onRebuild('Rabbit')} icon={<Rabbit size={18} />} label={t.rabbit} />
+                                        <DropdownItem onClick={() => onRebuild('Twins')} icon={<Users size={18} />} label={t.twins} />
+                                        <div className="h-px bg-slate-100 my-1" />
+                                    </>
+                                )}
+
+                                {/* Custom Rebuilds */}
+                                {customRebuilds.length > 0 && (
+                                    <>
+                                        <div className="px-2 py-1 text-xs font-bold text-slate-400 uppercase tracking-wider">{t.customRebuilds}</div>
+                                        {customRebuilds.map((model, idx) => (
+                                            <DropdownItem
+                                                key={`rebuild-${idx}`}
+                                                onClick={() => onSelectCustomRebuild(model)}
+                                                icon={<History size={18} />}
+                                                label={model.name}
+                                                truncate
+                                            />
+                                        ))}
+                                        <div className="h-px bg-slate-100 my-1" />
+                                    </>
+                                )}
+
+                                <DropdownItem onClick={onPromptMorph} icon={<Wand2 size={18} />} label={t.newRebuild} highlight />
+                            </DropdownMenu>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+        </div>
+    );
 };
 
 // --- Components ---
 
 interface TactileButtonProps {
-  onClick: () => void;
-  disabled?: boolean;
-  icon: React.ReactNode;
-  label: string;
-  color: 'slate' | 'rose' | 'sky' | 'emerald' | 'amber' | 'indigo';
-  compact?: boolean;
+    onClick: () => void;
+    disabled?: boolean;
+    icon: React.ReactNode;
+    label: string;
+    color: 'slate' | 'rose' | 'sky' | 'emerald' | 'amber' | 'indigo';
+    compact?: boolean;
 }
 
 const TactileButton: React.FC<TactileButtonProps> = ({ onClick, disabled, icon, label, color, compact }) => {
-  const colorStyles = {
-    slate:   'bg-slate-200 text-slate-600 shadow-slate-300 hover:bg-slate-300',
-    rose:    'bg-rose-500 text-white shadow-rose-700 hover:bg-rose-600',
-    sky:     'bg-sky-500 text-white shadow-sky-700 hover:bg-sky-600',
-    emerald: 'bg-emerald-500 text-white shadow-emerald-700 hover:bg-emerald-600',
-    amber:   'bg-amber-400 text-amber-900 shadow-amber-600 hover:bg-amber-500',
-    indigo:  'bg-indigo-500 text-white shadow-indigo-700 hover:bg-indigo-600',
-  };
+    const colorStyles = {
+        slate: 'bg-slate-200 text-slate-600 shadow-slate-300 hover:bg-slate-300',
+        rose: 'bg-rose-500 text-white shadow-rose-700 hover:bg-rose-600',
+        sky: 'bg-sky-500 text-white shadow-sky-700 hover:bg-sky-600',
+        emerald: 'bg-emerald-500 text-white shadow-emerald-700 hover:bg-emerald-600',
+        amber: 'bg-amber-400 text-amber-900 shadow-amber-600 hover:bg-amber-500',
+        indigo: 'bg-indigo-500 text-white shadow-indigo-700 hover:bg-indigo-600',
+    };
 
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`
+    return (
+        <button
+            onClick={onClick}
+            disabled={disabled}
+            className={`
         group relative flex items-center justify-center gap-2 rounded-xl font-bold text-sm transition-all duration-100
         border-b-[4px] active:border-b-0 active:translate-y-[4px]
         ${compact ? 'p-2.5' : 'px-4 py-3'}
-        ${disabled 
-          ? 'bg-slate-100 text-slate-300 border-slate-200 cursor-not-allowed shadow-none' 
-          : `${colorStyles[color]} border-black/20 shadow-lg`}
+        ${disabled
+                    ? 'bg-slate-100 text-slate-300 border-slate-200 cursor-not-allowed shadow-none'
+                    : `${colorStyles[color]} border-black/20 shadow-lg`}
       `}
-    >
-      {icon}
-      {!compact && <span>{label}</span>}
-    </button>
-  );
+        >
+            {icon}
+            {!compact && <span>{label}</span>}
+        </button>
+    );
 };
 
-const BigActionButton: React.FC<{onClick: () => void, icon: React.ReactNode, label: string, color: 'rose'}> = ({ onClick, icon, label, color }) => {
+const BigActionButton: React.FC<{ onClick: () => void, icon: React.ReactNode, label: string, color: 'rose' }> = ({ onClick, icon, label, color }) => {
     return (
-        <button 
+        <button
             onClick={onClick}
             className="group relative flex flex-col items-center justify-center w-32 h-32 rounded-3xl bg-rose-500 hover:bg-rose-600 text-white shadow-xl shadow-rose-900/30 border-b-[8px] border-rose-800 active:border-b-0 active:translate-y-[8px] transition-all duration-150"
         >
@@ -323,7 +332,7 @@ const DropdownMenu: React.FC<DropdownProps> = ({ icon, label, children, color, d
 
     return (
         <div className="relative" ref={menuRef}>
-            <button 
+            <button
                 onClick={() => setIsOpen(!isOpen)}
                 className={`
                     flex items-center gap-2 font-bold text-white shadow-lg rounded-2xl transition-all active:scale-95
@@ -350,12 +359,12 @@ const DropdownMenu: React.FC<DropdownProps> = ({ icon, label, children, color, d
 
 const DropdownItem: React.FC<{ onClick: () => void, icon: React.ReactNode, label: string, highlight?: boolean, truncate?: boolean }> = ({ onClick, icon, label, highlight, truncate }) => {
     return (
-        <button 
+        <button
             onClick={onClick}
             className={`
                 w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-bold transition-colors text-left
-                ${highlight 
-                    ? 'bg-gradient-to-r from-sky-50 to-blue-50 text-sky-600 hover:from-sky-100 hover:to-blue-100' 
+                ${highlight
+                    ? 'bg-gradient-to-r from-sky-50 to-blue-50 text-sky-600 hover:from-sky-100 hover:to-blue-100'
                     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}
             `}
         >

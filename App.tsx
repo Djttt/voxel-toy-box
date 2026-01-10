@@ -10,196 +10,202 @@ import { UIOverlay } from './components/UIOverlay';
 import { JsonModal } from './components/JsonModal';
 import { PromptModal } from './components/PromptModal';
 import { WelcomeScreen } from './components/WelcomeScreen';
+import { ServerModelModal } from './components/ServerModelModal';
+import { UploadModal } from './components/UploadModal';
+import { api } from './services/api';
 import { Generators } from './utils/voxelGenerators';
 import { AppState, VoxelData, SavedModel } from './types';
 import { GoogleGenAI, Type } from "@google/genai";
 import { TRANSLATIONS, Language } from './utils/translations';
 
 const App: React.FC = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const engineRef = useRef<VoxelEngine | null>(null);
-  
-  const [appState, setAppState] = useState<AppState>(AppState.STABLE);
-  const [voxelCount, setVoxelCount] = useState<number>(0);
-  
-  const [isJsonModalOpen, setIsJsonModalOpen] = useState(false);
-  const [jsonModalMode, setJsonModalMode] = useState<'view' | 'import'>('view');
-  
-  const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
-  const [promptMode, setPromptMode] = useState<'create' | 'morph'>('create');
-  
-  const [showWelcome, setShowWelcome] = useState(true);
-  const [isGenerating, setIsGenerating] = useState(false);
-  
-  const [jsonData, setJsonData] = useState('');
-  const [isAutoRotate, setIsAutoRotate] = useState(true);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const engineRef = useRef<VoxelEngine | null>(null);
 
-  // --- State for Custom Models ---
-  const [currentBaseModel, setCurrentBaseModel] = useState<string>('Eagle');
-  const [customBuilds, setCustomBuilds] = useState<SavedModel[]>([]);
-  const [customRebuilds, setCustomRebuilds] = useState<SavedModel[]>([]);
+    const [appState, setAppState] = useState<AppState>(AppState.STABLE);
+    const [voxelCount, setVoxelCount] = useState<number>(0);
 
-  // --- Language State ---
-  const [language, setLanguage] = useState<Language>('en');
+    const [isJsonModalOpen, setIsJsonModalOpen] = useState(false);
+    const [jsonModalMode, setJsonModalMode] = useState<'view' | 'import'>('view');
 
-  const toggleLanguage = () => {
-      setLanguage(prev => prev === 'en' ? 'zh' : 'en');
-  };
+    const [isServerModalOpen, setIsServerModalOpen] = useState(false);
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (!containerRef.current) return;
+    const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
+    const [promptMode, setPromptMode] = useState<'create' | 'morph'>('create');
 
-    // Initialize Engine
-    const engine = new VoxelEngine(
-      containerRef.current,
-      (newState) => setAppState(newState),
-      (count) => setVoxelCount(count)
-    );
+    const [showWelcome, setShowWelcome] = useState(true);
+    const [isGenerating, setIsGenerating] = useState(false);
 
-    engineRef.current = engine;
+    const [jsonData, setJsonData] = useState('');
+    const [isAutoRotate, setIsAutoRotate] = useState(true);
 
-    // Initial Model Load
-    engine.loadInitialModel(Generators.Eagle());
+    // --- State for Custom Models ---
+    const [currentBaseModel, setCurrentBaseModel] = useState<string>('Eagle');
+    const [customBuilds, setCustomBuilds] = useState<SavedModel[]>([]);
+    const [customRebuilds, setCustomRebuilds] = useState<SavedModel[]>([]);
 
-    // Resize Listener
-    const handleResize = () => engine.handleResize();
-    window.addEventListener('resize', handleResize);
+    // --- Language State ---
+    const [language, setLanguage] = useState<Language>('en');
 
-    // Auto-hide welcome screen after interaction
-    const timer = setTimeout(() => setShowWelcome(false), 5000);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      clearTimeout(timer);
-      engine.cleanup();
+    const toggleLanguage = () => {
+        setLanguage(prev => prev === 'en' ? 'zh' : 'en');
     };
-  }, []);
 
-  const handleDismantle = () => {
-    engineRef.current?.dismantle();
-  };
+    useEffect(() => {
+        if (!containerRef.current) return;
 
-  const handleNewScene = (type: 'Eagle') => {
-    const generator = Generators[type];
-    if (generator && engineRef.current) {
-      engineRef.current.loadInitialModel(generator());
-      setCurrentBaseModel('Eagle');
+        // Initialize Engine
+        const engine = new VoxelEngine(
+            containerRef.current,
+            (newState) => setAppState(newState),
+            (count) => setVoxelCount(count)
+        );
+
+        engineRef.current = engine;
+
+        // Initial Model Load
+        engine.loadInitialModel(Generators.Eagle());
+
+        // Resize Listener
+        const handleResize = () => engine.handleResize();
+        window.addEventListener('resize', handleResize);
+
+        // Auto-hide welcome screen after interaction
+        const timer = setTimeout(() => setShowWelcome(false), 5000);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            clearTimeout(timer);
+            engine.cleanup();
+        };
+    }, []);
+
+    const handleDismantle = () => {
+        engineRef.current?.dismantle();
+    };
+
+    const handleNewScene = (type: 'Eagle') => {
+        const generator = Generators[type];
+        if (generator && engineRef.current) {
+            engineRef.current.loadInitialModel(generator());
+            setCurrentBaseModel('Eagle');
+        }
+    };
+
+    const handleSelectCustomBuild = (model: SavedModel) => {
+        if (engineRef.current) {
+            engineRef.current.loadInitialModel(model.data);
+            setCurrentBaseModel(model.name);
+        }
+    };
+
+    const handleRebuild = (type: 'Eagle' | 'Cat' | 'Rabbit' | 'Twins') => {
+        const generator = Generators[type];
+        if (generator && engineRef.current) {
+            engineRef.current.rebuild(generator());
+        }
+    };
+
+    const handleSelectCustomRebuild = (model: SavedModel) => {
+        if (engineRef.current) {
+            engineRef.current.rebuild(model.data);
+        }
+    };
+
+    const handleShowJson = () => {
+        if (engineRef.current) {
+            setJsonData(engineRef.current.getJsonData());
+            setJsonModalMode('view');
+            setIsJsonModalOpen(true);
+        }
+    };
+
+    const handleImportClick = () => {
+        setJsonModalMode('import');
+        setIsJsonModalOpen(true);
+    };
+
+    const handleJsonImport = (jsonStr: string) => {
+        try {
+            const rawData = JSON.parse(jsonStr);
+            if (!Array.isArray(rawData)) throw new Error("JSON must be an array");
+
+            const voxelData: VoxelData[] = rawData.map((v: any) => {
+                let colorVal = v.c || v.color;
+                let colorInt = 0xCCCCCC;
+
+                if (typeof colorVal === 'string') {
+                    if (colorVal.startsWith('#')) colorVal = colorVal.substring(1);
+                    colorInt = parseInt(colorVal, 16);
+                } else if (typeof colorVal === 'number') {
+                    colorInt = colorVal;
+                }
+
+                return {
+                    x: Number(v.x) || 0,
+                    y: Number(v.y) || 0,
+                    z: Number(v.z) || 0,
+                    color: isNaN(colorInt) ? 0xCCCCCC : colorInt
+                };
+            });
+
+            if (engineRef.current) {
+                engineRef.current.loadInitialModel(voxelData);
+                setCurrentBaseModel('Imported Build');
+            }
+        } catch (e) {
+            console.error("Failed to import JSON", e);
+            alert(TRANSLATIONS[language].alertImportFail);
+        }
+    };
+
+    const openPrompt = (mode: 'create' | 'morph') => {
+        setPromptMode(mode);
+        setIsPromptModalOpen(true);
     }
-  };
 
-  const handleSelectCustomBuild = (model: SavedModel) => {
-      if (engineRef.current) {
-          engineRef.current.loadInitialModel(model.data);
-          setCurrentBaseModel(model.name);
-      }
-  };
-
-  const handleRebuild = (type: 'Eagle' | 'Cat' | 'Rabbit' | 'Twins') => {
-    const generator = Generators[type];
-    if (generator && engineRef.current) {
-      engineRef.current.rebuild(generator());
-    }
-  };
-
-  const handleSelectCustomRebuild = (model: SavedModel) => {
-      if (engineRef.current) {
-          engineRef.current.rebuild(model.data);
-      }
-  };
-
-  const handleShowJson = () => {
-    if (engineRef.current) {
-      setJsonData(engineRef.current.getJsonData());
-      setJsonModalMode('view');
-      setIsJsonModalOpen(true);
-    }
-  };
-
-  const handleImportClick = () => {
-      setJsonModalMode('import');
-      setIsJsonModalOpen(true);
-  };
-
-  const handleJsonImport = (jsonStr: string) => {
-      try {
-          const rawData = JSON.parse(jsonStr);
-          if (!Array.isArray(rawData)) throw new Error("JSON must be an array");
-
-          const voxelData: VoxelData[] = rawData.map((v: any) => {
-              let colorVal = v.c || v.color;
-              let colorInt = 0xCCCCCC;
-
-              if (typeof colorVal === 'string') {
-                  if (colorVal.startsWith('#')) colorVal = colorVal.substring(1);
-                  colorInt = parseInt(colorVal, 16);
-              } else if (typeof colorVal === 'number') {
-                  colorInt = colorVal;
-              }
-
-              return {
-                  x: Number(v.x) || 0,
-                  y: Number(v.y) || 0,
-                  z: Number(v.z) || 0,
-                  color: isNaN(colorInt) ? 0xCCCCCC : colorInt
-              };
-          });
-          
-          if (engineRef.current) {
-              engineRef.current.loadInitialModel(voxelData);
-              setCurrentBaseModel('Imported Build');
-          }
-      } catch (e) {
-          console.error("Failed to import JSON", e);
-          alert(TRANSLATIONS[language].alertImportFail);
-      }
-  };
-
-  const openPrompt = (mode: 'create' | 'morph') => {
-      setPromptMode(mode);
-      setIsPromptModalOpen(true);
-  }
-  
-  const handleToggleRotation = () => {
-      const newState = !isAutoRotate;
-      setIsAutoRotate(newState);
-      if (engineRef.current) {
-          engineRef.current.setAutoRotate(newState);
-      }
-  }
-
-  const handlePromptSubmit = async (prompt: string) => {
-    if (!process.env.API_KEY) {
-        throw new Error("API Key not found");
+    const handleToggleRotation = () => {
+        const newState = !isAutoRotate;
+        setIsAutoRotate(newState);
+        if (engineRef.current) {
+            engineRef.current.setAutoRotate(newState);
+        }
     }
 
-    setIsGenerating(true);
-    // Close modal immediately so we can show the main loading indicator
-    setIsPromptModalOpen(false);
+    const handlePromptSubmit = async (prompt: string) => {
+        if (!process.env.API_KEY) {
+            throw new Error("API Key not found");
+        }
 
-    try {
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-        const model = 'gemini-3-flash-preview';
-        
-        let systemContext = "";
-        if (promptMode === 'morph' && engineRef.current) {
-            const availableColors = engineRef.current.getUniqueColors().join(', ');
-            systemContext = `
+        setIsGenerating(true);
+        // Close modal immediately so we can show the main loading indicator
+        setIsPromptModalOpen(false);
+
+        try {
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            const model = 'gemini-3-flash-preview';
+
+            let systemContext = "";
+            if (promptMode === 'morph' && engineRef.current) {
+                const availableColors = engineRef.current.getUniqueColors().join(', ');
+                systemContext = `
                 CONTEXT: You are re-assembling an existing pile of lego-like voxels.
                 The current pile consists of these colors: [${availableColors}].
                 TRY TO USE THESE COLORS if they fit the requested shape.
                 If the requested shape absolutely requires different colors, you may use them, but prefer the existing palette to create a "rebuilding" effect.
                 The model should be roughly the same volume as the previous one.
             `;
-        } else {
-            systemContext = `
+            } else {
+                systemContext = `
                 CONTEXT: You are creating a brand new voxel art scene from scratch.
                 Be creative with colors.
             `;
-        }   
+            }
 
-        const response = await ai.models.generateContent({
-            model,
-            contents: `
+            const response = await ai.models.generateContent({
+                model,
+                contents: `
                     ${systemContext}
                     
                     Task: Generate a 3D voxel art model of: "${prompt}".
@@ -212,122 +218,200 @@ const App: React.FC = () => {
                     5. Coordinates should be integers.
                     
                     Return ONLY a JSON array of objects.`,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: Type.ARRAY,
-                    items: {
-                        type: Type.OBJECT,
-                        properties: {
-                            x: { type: Type.INTEGER },
-                            y: { type: Type.INTEGER },
-                            z: { type: Type.INTEGER },
-                            color: { type: Type.STRING, description: "Hex color code e.g. #FF5500" }
-                        },
-                        required: ["x", "y", "z", "color"]
+                config: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: Type.ARRAY,
+                        items: {
+                            type: Type.OBJECT,
+                            properties: {
+                                x: { type: Type.INTEGER },
+                                y: { type: Type.INTEGER },
+                                z: { type: Type.INTEGER },
+                                color: { type: Type.STRING, description: "Hex color code e.g. #FF5500" }
+                            },
+                            required: ["x", "y", "z", "color"]
+                        }
+                    }
+                }
+            });
+
+            if (response.text) {
+                const rawData = JSON.parse(response.text);
+
+                // Validate and transform to VoxelData
+                const voxelData: VoxelData[] = rawData.map((v: any) => {
+                    let colorStr = v.color;
+                    if (colorStr.startsWith('#')) colorStr = colorStr.substring(1);
+                    const colorInt = parseInt(colorStr, 16);
+
+                    return {
+                        x: v.x,
+                        y: v.y,
+                        z: v.z,
+                        color: isNaN(colorInt) ? 0xCCCCCC : colorInt
+                    };
+                });
+
+                if (engineRef.current) {
+                    if (promptMode === 'create') {
+                        engineRef.current.loadInitialModel(voxelData);
+                        setCustomBuilds(prev => [...prev, { name: prompt, data: voxelData }]);
+                        setCurrentBaseModel(prompt);
+                    } else {
+                        engineRef.current.rebuild(voxelData);
+                        // Store baseModel to scope this rebuild to the current scene
+                        setCustomRebuilds(prev => [...prev, {
+                            name: prompt,
+                            data: voxelData,
+                            baseModel: currentBaseModel
+                        }]);
                     }
                 }
             }
-        });
+        } catch (err) {
+            console.error("Generation failed", err);
+            alert(TRANSLATIONS[language].alertGenFail);
+        } finally {
+            setIsGenerating(false);
+        }
+    };
 
-        if (response.text) {
-            const rawData = JSON.parse(response.text);
-            
-            // Validate and transform to VoxelData
-            const voxelData: VoxelData[] = rawData.map((v: any) => {
-                let colorStr = v.color;
-                if (colorStr.startsWith('#')) colorStr = colorStr.substring(1);
-                const colorInt = parseInt(colorStr, 16);
-                
+    const handleUploadToServer = () => {
+        setIsUploadModalOpen(true);
+    };
+
+    const handleConfirmUpload = async (name: string) => {
+        if (!engineRef.current) return;
+
+        const jsonData = engineRef.current.getJsonData();
+        const voxels = JSON.parse(jsonData);
+        const snapshot = engineRef.current.getSnapshot();
+
+        try {
+            const voxelData: VoxelData[] = voxels.map((v: any) => {
+                let colorInt = 0xCCCCCC;
+                if (v.c && typeof v.c === 'string' && v.c.startsWith('#')) {
+                    colorInt = parseInt(v.c.substring(1), 16);
+                }
                 return {
-                    x: v.x,
-                    y: v.y,
-                    z: v.z,
-                    color: isNaN(colorInt) ? 0xCCCCCC : colorInt
+                    x: v.x, y: v.y, z: v.z,
+                    color: colorInt
                 };
             });
 
-            if (engineRef.current) {
-                if (promptMode === 'create') {
-                    engineRef.current.loadInitialModel(voxelData);
-                    setCustomBuilds(prev => [...prev, { name: prompt, data: voxelData }]);
-                    setCurrentBaseModel(prompt);
-                } else {
-                    engineRef.current.rebuild(voxelData);
-                    // Store baseModel to scope this rebuild to the current scene
-                    setCustomRebuilds(prev => [...prev, { 
-                        name: prompt, 
-                        data: voxelData,
-                        baseModel: currentBaseModel 
-                    }]);
-                }
-            }
+            await api.uploadModel(name, voxelData, snapshot);
+            // alert(TRANSLATIONS[language].uploadSuccess); // Modal handles loading/closing, maybe show toast?
+            // For now, let's just update the current base model to the new name
+            setCurrentBaseModel(name);
+        } catch (e) {
+            console.error("Upload failed", e);
+            throw e; // Rethrow so modal can handle error if needed, or we alert here
+            // Modal checks catch for errors, so rethrow is good if modal handles it.
+            // Our modal just logs error. Let's alert here for safety or let modal handle?
+            // Modal code: try { await onConfirm(name); onClose(); } catch (err) { console.error(err) }
+            // So if we throw, modal catches and stops loading but stays open.
+            alert(TRANSLATIONS[language].uploadFail);
+            throw e;
         }
-    } catch (err) {
-        console.error("Generation failed", err);
-        alert(TRANSLATIONS[language].alertGenFail);
-    } finally {
-        setIsGenerating(false);
-    }
-  };
+    };
 
-  // Filter rebuilds to only show those relevant to the current base model
-  const relevantRebuilds = customRebuilds.filter(
-      r => r.baseModel === currentBaseModel
-  );
+    const handleSelectServerModel = async (id: string) => {
+        try {
+            const model = await api.getModel(id);
+            setIsServerModalOpen(false);
 
-  return (
-    <div className="relative w-full h-screen bg-[#f0f2f5] overflow-hidden">
-      {/* 3D Container */}
-      <div ref={containerRef} className="absolute inset-0 z-0" />
-      
-      {/* UI Overlay */}
-      <UIOverlay 
-        voxelCount={voxelCount}
-        appState={appState}
-        currentBaseModel={currentBaseModel}
-        customBuilds={customBuilds}
-        customRebuilds={relevantRebuilds} 
-        isAutoRotate={isAutoRotate}
-        isInfoVisible={showWelcome}
-        isGenerating={isGenerating}
-        language={language}
-        onDismantle={handleDismantle}
-        onRebuild={handleRebuild}
-        onNewScene={handleNewScene}
-        onSelectCustomBuild={handleSelectCustomBuild}
-        onSelectCustomRebuild={handleSelectCustomRebuild}
-        onPromptCreate={() => openPrompt('create')}
-        onPromptMorph={() => openPrompt('morph')}
-        onShowJson={handleShowJson}
-        onImportJson={handleImportClick}
-        onToggleRotation={handleToggleRotation}
-        onToggleInfo={() => setShowWelcome(!showWelcome)}
-        onToggleLanguage={toggleLanguage}
-      />
+            if (engineRef.current && model.data) {
+                const voxelData: VoxelData[] = model.data.map((v: any) => ({
+                    x: v.x,
+                    y: v.y,
+                    z: v.z,
+                    color: v.color // API returns color as number from our upload transform
+                }));
 
-      {/* Modals & Screens */}
-      
-      <WelcomeScreen visible={showWelcome} language={language} />
+                engineRef.current.loadInitialModel(voxelData);
+                setCurrentBaseModel(model.name);
+            }
+        } catch (e) {
+            console.error("Failed to load model", e);
+            alert("Failed to load model from server.");
+        }
+    };
 
-      <JsonModal 
-        isOpen={isJsonModalOpen}
-        onClose={() => setIsJsonModalOpen(false)}
-        data={jsonData}
-        isImport={jsonModalMode === 'import'}
-        onImport={handleJsonImport}
-        language={language}
-      />
+    // Filter rebuilds to only show those relevant to the current base model
+    const relevantRebuilds = customRebuilds.filter(
+        r => r.baseModel === currentBaseModel
+    );
 
-      <PromptModal
-        isOpen={isPromptModalOpen}
-        mode={promptMode}
-        onClose={() => setIsPromptModalOpen(false)}
-        onSubmit={handlePromptSubmit}
-        language={language}
-      />
-    </div>
-  );
+    return (
+        <div className="relative w-full h-screen bg-[#f0f2f5] overflow-hidden">
+            {/* 3D Container */}
+            <div ref={containerRef} className="absolute inset-0 z-0" />
+
+            {/* UI Overlay */}
+            <UIOverlay
+                voxelCount={voxelCount}
+                appState={appState}
+                currentBaseModel={currentBaseModel}
+                customBuilds={customBuilds}
+                customRebuilds={relevantRebuilds}
+                isAutoRotate={isAutoRotate}
+                isInfoVisible={showWelcome}
+                isGenerating={isGenerating}
+                language={language}
+                onDismantle={handleDismantle}
+                onRebuild={handleRebuild}
+                onNewScene={handleNewScene}
+                onSelectCustomBuild={handleSelectCustomBuild}
+                onSelectCustomRebuild={handleSelectCustomRebuild}
+                onPromptCreate={() => openPrompt('create')}
+                onPromptMorph={() => openPrompt('morph')}
+                onShowJson={handleShowJson}
+                onImportJson={handleImportClick}
+                onUpload={handleUploadToServer}
+                onBrowseServer={() => setIsServerModalOpen(true)}
+                onToggleRotation={handleToggleRotation}
+                onToggleInfo={() => setShowWelcome(!showWelcome)}
+                onToggleLanguage={toggleLanguage}
+            />
+
+            {/* Modals & Screens */}
+
+            <WelcomeScreen visible={showWelcome} language={language} />
+
+            <JsonModal
+                isOpen={isJsonModalOpen}
+                onClose={() => setIsJsonModalOpen(false)}
+                data={jsonData}
+                isImport={jsonModalMode === 'import'}
+                onImport={handleJsonImport}
+                language={language}
+            />
+
+            <ServerModelModal
+                isOpen={isServerModalOpen}
+                onClose={() => setIsServerModalOpen(false)}
+                onSelectModel={handleSelectServerModel}
+                language={language}
+            />
+
+            <UploadModal
+                isOpen={isUploadModalOpen}
+                onClose={() => setIsUploadModalOpen(false)}
+                onConfirm={handleConfirmUpload}
+                initialName={currentBaseModel}
+                language={language}
+            />
+
+            <PromptModal
+                isOpen={isPromptModalOpen}
+                mode={promptMode}
+                onClose={() => setIsPromptModalOpen(false)}
+                onSubmit={handlePromptSubmit}
+                language={language}
+            />
+        </div>
+    );
 };
 
 export default App;
