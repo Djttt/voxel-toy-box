@@ -120,5 +120,27 @@ def get_model(model_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/models/<model_id>', methods=['DELETE'])
+def delete_model(model_id):
+    """Delete a model and its thumbnail."""
+    safe_id = os.path.basename(model_id)
+    filepath = os.path.join(UPLOAD_FOLDER, safe_id)
+    
+    if not os.path.exists(filepath):
+        return jsonify({'error': 'Model not found'}), 404
+        
+    try:
+        os.remove(filepath)
+        
+        # Try to remove thumbnail
+        thumb_filename = safe_id.replace('.json', '.png')
+        thumb_path = os.path.join(UPLOAD_FOLDER, thumb_filename)
+        if os.path.exists(thumb_path):
+            os.remove(thumb_path)
+            
+        return jsonify({'success': True, 'message': 'Model deleted successfully'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

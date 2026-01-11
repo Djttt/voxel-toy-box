@@ -47,10 +47,10 @@ const App: React.FC = () => {
     const [customRebuilds, setCustomRebuilds] = useState<SavedModel[]>([]);
 
     // --- Language State ---
-    const [language, setLanguage] = useState<Language>('en');
+    const [language, setLanguage] = useState<Language>('zh');
 
     const toggleLanguage = () => {
-        setLanguage(prev => prev === 'en' ? 'zh' : 'en');
+        setLanguage(prev => prev === 'zh' ? 'en' : 'zh');
     };
 
     useEffect(() => {

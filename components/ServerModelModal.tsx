@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Server, Download, Calendar, Box, Search } from 'lucide-react';
+import { X, Server, Download, Calendar, Box, Search, Lock, Trash2, LogIn, Check } from 'lucide-react';
 import { api, ServerModelInfo } from '../services/api';
 import { Language, TRANSLATIONS } from '../utils/translations';
 
@@ -20,12 +20,23 @@ export const ServerModelModal: React.FC<ServerModelModalProps> = ({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+
+    // Admin State
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [showAdminLogin, setShowAdminLogin] = useState(false);
+    const [adminPassword, setAdminPassword] = useState('');
+
     const t = TRANSLATIONS[language];
 
     useEffect(() => {
         if (isOpen) {
             loadModels();
             setSearchTerm('');
+            setShowAdminLogin(false);
+            setAdminPassword('');
+            // Assuming we don't persist admin session across modal closes for security, or maybe we do?
+            // Let's reset for now.
+            setIsAdmin(false);
         }
     }, [isOpen]);
 
@@ -40,6 +51,31 @@ export const ServerModelModal: React.FC<ServerModelModalProps> = ({
             console.error(err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDelete = async (id: string, e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent card click
+
+        if (!confirm(t.confirmDelete)) return;
+
+        try {
+            await api.deleteModel(id);
+            // alert(t.deleteSuccess); // Optional
+            loadModels(); // Refresh list
+        } catch (err) {
+            console.error("Delete failed", err);
+            alert("Failed to delete model.");
+        }
+    };
+
+    const handleAdminLogin = () => {
+        if (adminPassword === 'admin123') {
+            setIsAdmin(true);
+            setShowAdminLogin(false);
+            setAdminPassword('');
+        } else {
+            alert('Wrong password');
         }
     };
 
@@ -79,12 +115,44 @@ export const ServerModelModal: React.FC<ServerModelModalProps> = ({
                         />
                     </div>
 
-                    <button
-                        onClick={onClose}
-                        className="p-2.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors shrink-0"
-                    >
-                        <X size={24} />
-                    </button>
+
+                    <div className="flex items-center gap-2">
+                        {/* Admin Toggle */}
+                        {showAdminLogin ? (
+                            <div className="flex items-center gap-2 bg-slate-100 rounded-xl p-1 animate-in slide-in-from-right-4 duration-300">
+                                <input
+                                    type="password"
+                                    className="bg-transparent px-3 py-1.5 text-sm font-bold text-slate-700 outline-none w-32"
+                                    placeholder={t.adminPassword}
+                                    value={adminPassword}
+                                    onChange={e => setAdminPassword(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && handleAdminLogin()}
+                                    autoFocus
+                                />
+                                <button onClick={handleAdminLogin} className="p-1.5 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600">
+                                    <Check size={16} />
+                                </button>
+                                <button onClick={() => setShowAdminLogin(false)} className="p-1.5 text-slate-400 hover:text-slate-600">
+                                    <X size={16} />
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => isAdmin ? setIsAdmin(false) : setShowAdminLogin(true)}
+                                className={`p-2.5 rounded-xl transition-colors shrink-0 ${isAdmin ? 'bg-amber-100 text-amber-600 hover:bg-amber-200' : 'hover:bg-slate-100 text-slate-400 hover:text-slate-600'}`}
+                                title={t.adminLogin}
+                            >
+                                {isAdmin ? <Lock size={24} /> : <LogIn size={24} />}
+                            </button>
+                        )}
+
+                        <button
+                            onClick={onClose}
+                            className="p-2.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors shrink-0"
+                        >
+                            <X size={24} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Content */}
@@ -141,8 +209,19 @@ export const ServerModelModal: React.FC<ServerModelModalProps> = ({
                                     {/* Action Bar */}
                                     <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center z-10 group-hover:bg-indigo-50/50 transition-colors">
                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-indigo-400 transition-colors">#{model.id.substring(0, 8)}...</span>
-                                        <div className="bg-white p-1.5 rounded-lg border border-slate-200 text-slate-400 group-hover:border-indigo-200 group-hover:text-indigo-600 group-hover:bg-indigo-100 transition-all shadow-sm">
-                                            <Download size={14} strokeWidth={2.5} />
+                                        <div className="flex items-center gap-2">
+                                            {isAdmin && (
+                                                <div
+                                                    onClick={(e) => handleDelete(model.id, e)}
+                                                    className="bg-white p-1.5 rounded-lg border border-rose-200 text-rose-400 hover:border-rose-300 hover:text-rose-600 hover:bg-rose-100 transition-all shadow-sm z-20"
+                                                    title={t.delete}
+                                                >
+                                                    <Trash2 size={14} strokeWidth={2.5} />
+                                                </div>
+                                            )}
+                                            <div className="bg-white p-1.5 rounded-lg border border-slate-200 text-slate-400 group-hover:border-indigo-200 group-hover:text-indigo-600 group-hover:bg-indigo-100 transition-all shadow-sm">
+                                                <Download size={14} strokeWidth={2.5} />
+                                            </div>
                                         </div>
                                     </div>
 

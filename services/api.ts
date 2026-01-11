@@ -37,5 +37,13 @@ export const api = {
         });
         if (!res.ok) throw new Error('Failed to upload model');
         return res.json();
+    },
+
+    async deleteModel(id: string): Promise<boolean> {
+        const res = await fetch(`${API_BASE_URL}/models/${id}`, {
+            method: 'DELETE'
+        });
+        if (!res.ok) throw new Error('Failed to delete model');
+        return true;
     }
 };

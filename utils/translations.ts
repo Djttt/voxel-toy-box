@@ -100,7 +100,13 @@ export const TRANSLATIONS = {
     helpExternalDesc: "Use this prompt on any other AI site (ChatGPT, Gemini, etc.) to generate models, then copy the JSON response and import it here using the 'Import JSON' button.",
     helpOllamaTitle: "Local Ollama Setup",
     helpOllamaDesc: "To allow this app to connect to your local Ollama instance, you must start the server with CORS allowed:",
-    close: "Close"
+    close: "Close",
+    // Admin
+    adminLogin: "Admin Access",
+    adminPassword: "Password",
+    delete: "Delete",
+    confirmDelete: "Are you sure you want to delete this model?",
+    deleteSuccess: "Model deleted."
   },
   zh: {
     // UIOverlay
@@ -196,6 +202,12 @@ export const TRANSLATIONS = {
     helpExternalDesc: "在其他 AI 网站（ChatGPT, Gemini 等）上使用此提示词生成模型，然后复制 JSON 响应并使用“导入数据”按钮导入。",
     helpOllamaTitle: "本地 Ollama 设置",
     helpOllamaDesc: "为了允许此应用连接到您的本地 Ollama 实例，您必须允许跨域请求 (CORS) 并启动服务器：",
-    close: "关闭"
+    close: "关闭",
+    // Admin
+    adminLogin: "管理员访问",
+    adminPassword: "密码",
+    delete: "删除",
+    confirmDelete: "确定要删除此模型吗？",
+    deleteSuccess: "模型已删除。"
   }
 };
