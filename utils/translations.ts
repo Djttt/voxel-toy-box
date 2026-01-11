@@ -13,7 +13,7 @@ export const TRANSLATIONS = {
     yourCreations: "YOUR CREATIONS",
     importJson: "Import JSON",
     voxels: "Voxels",
-    info: "Info",
+    info: "Help",
     pauseCam: "Pause Cam",
     playCam: "Play Cam",
     share: "Share",
@@ -93,7 +93,14 @@ export const TRANSLATIONS = {
     ollamaUrl: "Ollama URL",
     ollamaModel: "Model Name",
     apiKeyMissing: "API Key Missing",
-    invalidUrl: "Invalid URL"
+    invalidUrl: "Invalid URL",
+    // HelpModal
+    helpTitle: "Documentation & Help",
+    helpExternalTitle: "Generate Elsewhere",
+    helpExternalDesc: "Use this prompt on any other AI site (ChatGPT, Gemini, etc.) to generate models, then copy the JSON response and import it here using the 'Import JSON' button.",
+    helpOllamaTitle: "Local Ollama Setup",
+    helpOllamaDesc: "To allow this app to connect to your local Ollama instance, you must start the server with CORS allowed:",
+    close: "Close"
   },
   zh: {
     // UIOverlay
@@ -102,7 +109,7 @@ export const TRANSLATIONS = {
     yourCreations: "你的创作",
     importJson: "导入 JSON",
     voxels: "体素",
-    info: "关于",
+    info: "帮助",
     pauseCam: "暂停",
     playCam: "播放",
     share: "分享",
@@ -182,6 +189,13 @@ export const TRANSLATIONS = {
     ollamaUrl: "Ollama 地址",
     ollamaModel: "模型名称",
     apiKeyMissing: "缺少 API Key",
-    invalidUrl: "无效的 URL"
+    invalidUrl: "无效的 URL",
+    // HelpModal
+    helpTitle: "文档与帮助",
+    helpExternalTitle: "在其他地方生成",
+    helpExternalDesc: "在其他 AI 网站（ChatGPT, Gemini 等）上使用此提示词生成模型，然后复制 JSON 响应并使用“导入数据”按钮导入。",
+    helpOllamaTitle: "本地 Ollama 设置",
+    helpOllamaDesc: "为了允许此应用连接到您的本地 Ollama 实例，您必须允许跨域请求 (CORS) 并启动服务器：",
+    close: "关闭"
   }
 };

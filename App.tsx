@@ -12,6 +12,7 @@ import { PromptModal } from './components/PromptModal';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { ServerModelModal } from './components/ServerModelModal';
 import { UploadModal } from './components/UploadModal';
+import { HelpModal } from './components/HelpModal';
 import { api } from './services/api';
 import { Generators } from './utils/voxelGenerators';
 import { AppState, VoxelData, SavedModel, GenConfig } from './types';
@@ -345,6 +346,12 @@ const App: React.FC = () => {
                 mode={promptMode}
                 onClose={() => setIsPromptModalOpen(false)}
                 onSubmit={handlePromptSubmit}
+                language={language}
+            />
+
+            <HelpModal
+                isOpen={showWelcome}
+                onClose={() => setShowWelcome(false)}
                 language={language}
             />
         </div>
