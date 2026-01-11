@@ -37,6 +37,19 @@ export const llm = {
         } else {
             return generateWithOllama(fullPrompt, config);
         }
+    },
+
+    async listModels(baseUrl: string): Promise<string[]> {
+        const url = `${baseUrl}/api/tags`;
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`Ollama error: ${res.statusText}`);
+            const data = await res.json();
+            return data.models.map((m: any) => m.name);
+        } catch (err) {
+            console.error("Failed to fetch models", err);
+            throw err;
+        }
     }
 };
 

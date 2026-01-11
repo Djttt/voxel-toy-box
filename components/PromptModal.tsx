@@ -5,9 +5,10 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { Sparkles, X, Loader2, Wand2, Hammer, Settings, Cpu } from 'lucide-react';
+import { Sparkles, X, Loader2, Wand2, Hammer, Settings, Cpu, RefreshCw } from 'lucide-react';
 import { Language, TRANSLATIONS } from '../utils/translations';
 import { GenConfig } from '../types';
+import { llm } from '../services/llm';
 
 interface PromptModalProps {
   isOpen: boolean;
@@ -29,6 +30,27 @@ export const PromptModal: React.FC<PromptModalProps> = ({ isOpen, mode, onClose,
   const [ollamaModel, setOllamaModel] = useState('gemini-3-flash-preview:cloud');
 
   const t = TRANSLATIONS[language];
+
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [isFetching, setIsFetching] = useState(false);
+
+  const handleFetchModels = async () => {
+    setIsFetching(true);
+    try {
+      // Normalize URL: Remove trailing slash
+      const cleanUrl = ollamaUrl.replace(/\/$/, "");
+      const models = await llm.listModels(cleanUrl);
+      setAvailableModels(models);
+      if (models.length > 0) {
+        setOllamaModel(models[0]);
+      }
+    } catch (e) {
+      console.error(e);
+      alert(t.fetchError); // Note: t is defined just above
+    } finally {
+      setIsFetching(false);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -65,6 +87,8 @@ export const PromptModal: React.FC<PromptModalProps> = ({ isOpen, mode, onClose,
       setIsLoading(false);
     }
   };
+
+
 
   const isCreate = mode === 'create';
   const themeColor = isCreate ? 'sky' : 'amber';
@@ -128,17 +152,7 @@ export const PromptModal: React.FC<PromptModalProps> = ({ isOpen, mode, onClose,
             </div>
 
             {provider === 'ollama' && (
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 mb-1">{t.ollamaModel}</label>
-                  <input
-                    type="text"
-                    value={ollamaModel}
-                    onChange={(e) => setOllamaModel(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 outline-none text-slate-700 font-medium"
-                    placeholder="gemini-3-flash-preview:cloud"
-                  />
-                </div>
+              <div className="grid grid-cols-1 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-400 mb-1">{t.ollamaUrl}</label>
                   <input
@@ -146,8 +160,53 @@ export const PromptModal: React.FC<PromptModalProps> = ({ isOpen, mode, onClose,
                     value={ollamaUrl}
                     onChange={(e) => setOllamaUrl(e.target.value)}
                     className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 outline-none text-slate-700 font-medium"
-                    placeholder="http://172.23.252.114:11434"
+                    placeholder="http://localhost:11434"
                   />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="block text-xs font-bold text-slate-400">{t.ollamaModel}</label>
+                    <button
+                      type="button"
+                      onClick={handleFetchModels}
+                      className="text-xs font-bold text-indigo-500 hover:text-indigo-600 flex items-center gap-1"
+                      disabled={isFetching}
+                    >
+                      <RefreshCw size={12} className={isFetching ? "animate-spin" : ""} />
+                      {isFetching ? t.fetching : t.fetchModels}
+                    </button>
+                  </div>
+
+                  {availableModels.length > 0 ? (
+                    <select
+                      value={ollamaModel}
+                      onChange={(e) => setOllamaModel(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 outline-none text-slate-700 font-medium appearance-none bg-white"
+                    >
+                      <option value="" disabled>{t.selectModel}</option>
+                      {availableModels.map(m => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                      <option value="custom">-- Custom --</option>
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={ollamaModel}
+                      onChange={(e) => setOllamaModel(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 outline-none text-slate-700 font-medium"
+                      placeholder="llama3"
+                    />
+                  )}
+                  {availableModels.length > 0 && ollamaModel === 'custom' && (
+                    <input
+                      type="text"
+                      onChange={(e) => setOllamaModel(e.target.value)}
+                      className="w-full mt-2 px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 outline-none text-slate-700 font-medium"
+                      placeholder="llama3"
+                    />
+                  )}
                 </div>
               </div>
             )}

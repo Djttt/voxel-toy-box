@@ -106,7 +106,12 @@ export const TRANSLATIONS = {
     adminPassword: "Password",
     delete: "Delete",
     confirmDelete: "Are you sure you want to delete this model?",
-    deleteSuccess: "Model deleted."
+    deleteSuccess: "Model deleted.",
+    // Ollama
+    fetchModels: "Fetch Models",
+    fetching: "Fetching...",
+    selectModel: "Select a model",
+    fetchError: "Failed to fetch models. Check URL & CORS."
   },
   zh: {
     // UIOverlay
@@ -208,6 +213,11 @@ export const TRANSLATIONS = {
     adminPassword: "密码",
     delete: "删除",
     confirmDelete: "确定要删除此模型吗？",
-    deleteSuccess: "模型已删除。"
+    deleteSuccess: "模型已删除。",
+    // Ollama
+    fetchModels: "获取模型列表",
+    fetching: "获取中...",
+    selectModel: "选择模型",
+    fetchError: "无法获取模型。请检查 URL 和跨域设置。"
   }
 };
