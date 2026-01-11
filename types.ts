@@ -48,5 +48,12 @@ export interface RebuildTarget {
 export interface SavedModel {
   name: string;
   data: VoxelData[];
-  baseModel?: string;
+  baseModel?: string; // For rebuilds
+}
+
+export interface GenConfig {
+  provider: 'gemini' | 'ollama';
+  ollamaUrl?: string; // e.g. http://localhost:11434
+  ollamaModel?: string; // e.g. llama3
+  apiKey?: string; // For Gemini
 }

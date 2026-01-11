@@ -5,14 +5,15 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { Sparkles, X, Loader2, Wand2, Hammer } from 'lucide-react';
+import { Sparkles, X, Loader2, Wand2, Hammer, Settings, Cpu } from 'lucide-react';
 import { Language, TRANSLATIONS } from '../utils/translations';
+import { GenConfig } from '../types';
 
 interface PromptModalProps {
   isOpen: boolean;
   mode: 'create' | 'morph';
   onClose: () => void;
-  onSubmit: (prompt: string) => Promise<void>;
+  onSubmit: (prompt: string, config: GenConfig) => Promise<void>;
   language: Language;
 }
 
@@ -20,6 +21,13 @@ export const PromptModal: React.FC<PromptModalProps> = ({ isOpen, mode, onClose,
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showSettings, setShowSettings] = useState(false);
+
+  // Config State
+  const [provider, setProvider] = useState<'gemini' | 'ollama'>('gemini');
+  const [ollamaUrl, setOllamaUrl] = useState('http://localhost:11434');
+  const [ollamaModel, setOllamaModel] = useState('llama3');
+
   const t = TRANSLATIONS[language];
 
   useEffect(() => {
@@ -27,6 +35,7 @@ export const PromptModal: React.FC<PromptModalProps> = ({ isOpen, mode, onClose,
       setPrompt('');
       setError('');
       setIsLoading(false);
+      // Keep previous settings
     }
   }, [isOpen]);
 
@@ -35,24 +44,29 @@ export const PromptModal: React.FC<PromptModalProps> = ({ isOpen, mode, onClose,
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!prompt.trim() || isLoading) return;
-    
+
     setIsLoading(true);
     setError('');
-    
+
+    const config: GenConfig = {
+      provider,
+      ollamaUrl: provider === 'ollama' ? ollamaUrl : undefined,
+      ollamaModel: provider === 'ollama' ? ollamaModel : undefined,
+    };
+
     try {
-      await onSubmit(prompt);
+      await onSubmit(prompt, config);
       setPrompt('');
       onClose();
     } catch (err) {
       console.error(err);
-      setError(t.error);
+      setError(t.error); // Or more specific error based on err
     } finally {
       setIsLoading(false);
     }
   };
 
   const isCreate = mode === 'create';
-  // Changed from fuchsia to sky/blue
   const themeColor = isCreate ? 'sky' : 'amber';
   const themeBg = isCreate ? 'bg-sky-500' : 'bg-amber-500';
   const themeHover = isCreate ? 'hover:bg-sky-600' : 'hover:bg-amber-600';
@@ -62,23 +76,28 @@ export const PromptModal: React.FC<PromptModalProps> = ({ isOpen, mode, onClose,
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 font-sans">
       <div className={`bg-white rounded-3xl shadow-2xl w-full max-w-lg flex flex-col border-4 ${isCreate ? 'border-sky-100' : 'border-amber-100'} animate-in fade-in zoom-in duration-200 scale-95 sm:scale-100 overflow-hidden`}>
-        
+
         {/* Header */}
         <div className={`flex items-center justify-between p-6 border-b ${isCreate ? 'border-sky-50 bg-gradient-to-r from-sky-50 to-blue-50' : 'border-amber-50 bg-gradient-to-r from-amber-50 to-orange-50'}`}>
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-xl ${themeLight} ${themeText}`}>
-                {isCreate ? <Wand2 size={24} strokeWidth={2.5} /> : <Hammer size={24} strokeWidth={2.5} />}
+              {isCreate ? <Wand2 size={24} strokeWidth={2.5} /> : <Hammer size={24} strokeWidth={2.5} />}
             </div>
             <div>
-                <h2 className="text-xl font-extrabold text-slate-800">
-                    {isCreate ? t.createTitle : t.rebuildTitle}
-                </h2>
+              <h2 className="text-xl font-extrabold text-slate-800">
+                {isCreate ? t.createTitle : t.rebuildTitle}
+              </h2>
+              <div className="flex items-center gap-1.5">
                 <p className={`text-xs font-bold uppercase tracking-wide ${isCreate ? 'text-sky-400' : 'text-amber-400'}`}>
-                    {t.poweredByGemini}
+                  {provider === 'gemini' ? t.providerGemini : t.providerOllama}
                 </p>
+                <button onClick={() => setShowSettings(!showSettings)} className="text-slate-400 hover:text-slate-600">
+                  <Settings size={12} />
+                </button>
+              </div>
             </div>
           </div>
-          <button 
+          <button
             onClick={!isLoading ? onClose : undefined}
             className="p-2 rounded-xl bg-white/50 text-slate-400 hover:bg-white hover:text-slate-700 transition-colors disabled:opacity-50"
             disabled={isLoading}
@@ -87,20 +106,68 @@ export const PromptModal: React.FC<PromptModalProps> = ({ isOpen, mode, onClose,
           </button>
         </div>
 
+        {/* Settings Panel */}
+        {showSettings && (
+          <div className="bg-slate-50 p-4 border-b border-slate-100 text-sm animate-in slide-in-from-top-2">
+            <div className="font-bold text-slate-700 mb-2">{t.aiProvider}</div>
+            <div className="flex gap-2 mb-4">
+              <button
+                type="button"
+                onClick={() => setProvider('gemini')}
+                className={`flex-1 py-2 rounded-xl font-bold border-2 transition-all ${provider === 'gemini' ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
+              >
+                Gemini
+              </button>
+              <button
+                type="button"
+                onClick={() => setProvider('ollama')}
+                className={`flex-1 py-2 rounded-xl font-bold border-2 transition-all ${provider === 'ollama' ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
+              >
+                Ollama
+              </button>
+            </div>
+
+            {provider === 'ollama' && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-1">{t.ollamaModel}</label>
+                  <input
+                    type="text"
+                    value={ollamaModel}
+                    onChange={(e) => setOllamaModel(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 outline-none text-slate-700 font-medium"
+                    placeholder="llama3"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-1">{t.ollamaUrl}</label>
+                  <input
+                    type="text"
+                    value={ollamaUrl}
+                    onChange={(e) => setOllamaUrl(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 outline-none text-slate-700 font-medium"
+                    placeholder="http://localhost:11434"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Body */}
         <div className="p-6 bg-white">
           <p className="text-slate-600 font-semibold mb-4">
-            {isCreate 
-                ? t.createPrompt 
-                : t.rebuildPrompt}
+            {isCreate
+              ? t.createPrompt
+              : t.rebuildPrompt}
           </p>
-          
+
           <form onSubmit={handleSubmit}>
-            <textarea 
+            <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder={isCreate 
-                ? t.createPlaceholder 
+              placeholder={isCreate
+                ? t.createPlaceholder
                 : t.rebuildPlaceholder}
               disabled={isLoading}
               className={`w-full h-32 resize-none bg-slate-50 border-2 border-slate-200 rounded-xl p-4 font-medium text-slate-700 focus:outline-none focus:ring-4 transition-all placeholder:text-slate-400 mb-4 ${isCreate ? 'focus:border-sky-400 focus:ring-sky-100' : 'focus:border-amber-400 focus:ring-amber-100'}`}
@@ -114,13 +181,21 @@ export const PromptModal: React.FC<PromptModalProps> = ({ isOpen, mode, onClose,
             )}
 
             <div className="flex justify-end">
-              <button 
+              <button
+                type="button"
+                className="mr-auto text-slate-400 hover:text-slate-600 transition-colors"
+                onClick={() => setShowSettings(!showSettings)}
+              >
+                <Cpu size={20} />
+              </button>
+
+              <button
                 type="submit"
                 disabled={!prompt.trim() || isLoading}
                 className={`
                   flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white text-sm transition-all
-                  ${isLoading 
-                    ? 'bg-slate-200 text-slate-400 cursor-wait' 
+                  ${isLoading
+                    ? 'bg-slate-200 text-slate-400 cursor-wait'
                     : `${themeBg} ${themeHover} shadow-lg active:scale-95`}
                 `}
               >

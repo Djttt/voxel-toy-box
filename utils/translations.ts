@@ -58,17 +58,17 @@ export const TRANSLATIONS = {
     // JsonModal
     importTitle: "Import Blueprint",
     shareTitle: "Copy and share your model",
+    newRebuild: "AI Morph",
+    restoreOriginal: "Restore Original",
     jsonFormat: "JSON Format",
     pasteLabel: "Paste your voxel JSON data here...",
     cancel: "Cancel",
     importBuild: "Import Build",
-    copyAll: "Copy All",
-    copied: "Copied!",
-    close: "Close",
-    errorJson: "Invalid JSON format. Please check your input.",
+    share: "Share JSON",
+    importJson: "Import JSON",
+    alertImportFail: "Invalid JSON format. Please check your data.",
     emptyJson: "Please paste JSON data first.",
     // App Alerts
-    alertImportFail: "Failed to import JSON. Please ensure the format is correct.",
     alertGenFail: "Oops! Something went wrong generating the model.",
     // Server
     server: "Server",
@@ -89,6 +89,14 @@ export const TRANSLATIONS = {
     uploadBtn: "Upload",
     uploading: "Uploading...",
     searchPlaceholder: "Search models...",
+    // PromptModal
+    aiProvider: "AI Provider",
+    providerGemini: "Google Gemini",
+    providerOllama: "Ollama (Local)",
+    ollamaUrl: "Ollama URL",
+    ollamaModel: "Model Name",
+    apiKeyMissing: "API Key Missing",
+    invalidUrl: "Invalid URL"
   },
   zh: {
     // UIOverlay
@@ -146,10 +154,11 @@ export const TRANSLATIONS = {
     pasteLabel: "在此粘贴体素 JSON 数据...",
     cancel: "取消",
     importBuild: "导入构建",
-    copyAll: "复制全部",
-    copied: "已复制！",
-    close: "关闭",
-    errorJson: "JSON 格式无效。请检查您的输入。",
+    newRebuild: "AI 变形",
+    restoreOriginal: "复原及重组",
+    share: "分享数据",
+    importJson: "导入数据",
+    alertImportFail: "JSON 格式无效，请检查数据。",
     emptyJson: "请先粘贴 JSON 数据。",
     // App Alerts
     alertImportFail: "无法导入 JSON。请确保格式正确。",
@@ -172,6 +181,14 @@ export const TRANSLATIONS = {
     namePlaceholder: "例如：炫酷飞船",
     uploadBtn: "上传",
     uploading: "正在上传...",
-    searchPlaceholder: "搜索模型..."
+    searchPlaceholder: "搜索模型...",
+    // PromptModal
+    aiProvider: "AI 提供商",
+    providerGemini: "Google Gemini",
+    providerOllama: "Ollama (本地)",
+    ollamaUrl: "Ollama 地址",
+    ollamaModel: "模型名称",
+    apiKeyMissing: "缺少 API Key",
+    invalidUrl: "无效的 URL"
   }
 };

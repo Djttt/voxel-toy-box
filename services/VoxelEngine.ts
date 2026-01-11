@@ -21,6 +21,7 @@ export class VoxelEngine {
   private voxels: SimulationVoxel[] = [];
   private rebuildTargets: RebuildTarget[] = [];
   private rebuildStartTime: number = 0;
+  private originalData: VoxelData[] = [];
 
   private state: AppState = AppState.STABLE;
   private onStateChange: (state: AppState) => void;
@@ -85,10 +86,17 @@ export class VoxelEngine {
   }
 
   public loadInitialModel(data: VoxelData[]) {
+    this.originalData = JSON.parse(JSON.stringify(data)); // Deep copy
     this.createVoxels(data);
     this.onCountChange(this.voxels.length);
     this.state = AppState.STABLE;
     this.onStateChange(this.state);
+  }
+
+  public restoreOriginal() {
+    if (this.originalData.length > 0) {
+      this.rebuild(this.originalData);
+    }
   }
 
   private createVoxels(data: VoxelData[]) {

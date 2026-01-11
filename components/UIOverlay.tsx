@@ -33,6 +33,7 @@ interface UIOverlayProps {
     onToggleLanguage: () => void;
     onUpload: () => void;
     onBrowseServer: () => void;
+    onRestore: () => void;
 }
 
 export const UIOverlay: React.FC<UIOverlayProps> = ({
@@ -58,7 +59,8 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
     onToggleInfo,
     onToggleLanguage,
     onUpload,
-    onBrowseServer
+    onBrowseServer,
+    onRestore
 }) => {
     const isStable = appState === AppState.STABLE;
     const isDismantling = appState === AppState.DISMANTLING;
@@ -222,6 +224,9 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                                         <div className="h-px bg-slate-100 my-1" />
                                     </>
                                 )}
+
+                                <DropdownItem onClick={onRestore} icon={<History size={18} />} label={t.restoreOriginal} />
+                                <div className="h-px bg-slate-100 my-1" />
 
                                 {/* Custom Rebuilds */}
                                 {customRebuilds.length > 0 && (

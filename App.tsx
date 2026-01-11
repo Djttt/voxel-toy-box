@@ -14,8 +14,8 @@ import { ServerModelModal } from './components/ServerModelModal';
 import { UploadModal } from './components/UploadModal';
 import { api } from './services/api';
 import { Generators } from './utils/voxelGenerators';
-import { AppState, VoxelData, SavedModel } from './types';
-import { GoogleGenAI, Type } from "@google/genai";
+import { AppState, VoxelData, SavedModel, GenConfig } from './types';
+import { llm } from './services/llm';
 import { TRANSLATIONS, Language } from './utils/translations';
 
 const App: React.FC = () => {
@@ -173,100 +173,30 @@ const App: React.FC = () => {
         }
     }
 
-    const handlePromptSubmit = async (prompt: string) => {
-        if (!process.env.API_KEY) {
-            throw new Error("API Key not found");
-        }
+    const handlePromptSubmit = async (prompt: string, config: GenConfig) => {
+        config.apiKey = process.env.API_KEY; // Inject API Key if using Gemini
 
         setIsGenerating(true);
         // Close modal immediately so we can show the main loading indicator
         setIsPromptModalOpen(false);
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-            const model = 'gemini-3-flash-preview';
+            const contextColors = engineRef.current ? engineRef.current.getUniqueColors() : [];
+            const voxelData = await llm.generate(prompt, promptMode, config, contextColors);
 
-            let systemContext = "";
-            if (promptMode === 'morph' && engineRef.current) {
-                const availableColors = engineRef.current.getUniqueColors().join(', ');
-                systemContext = `
-                CONTEXT: You are re-assembling an existing pile of lego-like voxels.
-                The current pile consists of these colors: [${availableColors}].
-                TRY TO USE THESE COLORS if they fit the requested shape.
-                If the requested shape absolutely requires different colors, you may use them, but prefer the existing palette to create a "rebuilding" effect.
-                The model should be roughly the same volume as the previous one.
-            `;
-            } else {
-                systemContext = `
-                CONTEXT: You are creating a brand new voxel art scene from scratch.
-                Be creative with colors.
-            `;
-            }
-
-            const response = await ai.models.generateContent({
-                model,
-                contents: `
-                    ${systemContext}
-                    
-                    Task: Generate a 3D voxel art model of: "${prompt}".
-                    
-                    Strict Rules:
-                    1. Use approximately 150 to 600 voxels.
-                    2. The model must be centered at x=0, z=0.
-                    3. The bottom of the model must be at y=0 or slightly higher.
-                    4. Ensure the structure is physically plausible (connected).
-                    5. Coordinates should be integers.
-                    
-                    Return ONLY a JSON array of objects.`,
-                config: {
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: Type.ARRAY,
-                        items: {
-                            type: Type.OBJECT,
-                            properties: {
-                                x: { type: Type.INTEGER },
-                                y: { type: Type.INTEGER },
-                                z: { type: Type.INTEGER },
-                                color: { type: Type.STRING, description: "Hex color code e.g. #FF5500" }
-                            },
-                            required: ["x", "y", "z", "color"]
-                        }
-                    }
-                }
-            });
-
-            if (response.text) {
-                const rawData = JSON.parse(response.text);
-
-                // Validate and transform to VoxelData
-                const voxelData: VoxelData[] = rawData.map((v: any) => {
-                    let colorStr = v.color;
-                    if (colorStr.startsWith('#')) colorStr = colorStr.substring(1);
-                    const colorInt = parseInt(colorStr, 16);
-
-                    return {
-                        x: v.x,
-                        y: v.y,
-                        z: v.z,
-                        color: isNaN(colorInt) ? 0xCCCCCC : colorInt
-                    };
-                });
-
-                if (engineRef.current) {
-                    if (promptMode === 'create') {
-                        engineRef.current.loadInitialModel(voxelData);
-                        setCustomBuilds(prev => [...prev, { name: prompt, data: voxelData }]);
-                        setCurrentBaseModel(prompt);
-                    } else {
-                        engineRef.current.rebuild(voxelData);
-                        // Store baseModel to scope this rebuild to the current scene
-                        setCustomRebuilds(prev => [...prev, {
-                            name: prompt,
-                            data: voxelData,
-                            baseModel: currentBaseModel
-                        }]);
-                    }
+            if (engineRef.current) {
+                if (promptMode === 'create') {
+                    engineRef.current.loadInitialModel(voxelData);
+                    setCustomBuilds(prev => [...prev, { name: prompt, data: voxelData }]);
+                    setCurrentBaseModel(prompt);
+                } else {
+                    engineRef.current.rebuild(voxelData);
+                    // Store baseModel to scope this rebuild to the current scene
+                    setCustomRebuilds(prev => [...prev, {
+                        name: prompt,
+                        data: voxelData,
+                        baseModel: currentBaseModel
+                    }]);
                 }
             }
         } catch (err) {
@@ -343,6 +273,12 @@ const App: React.FC = () => {
         r => r.baseModel === currentBaseModel
     );
 
+    const handleRestore = () => {
+        if (engineRef.current) {
+            engineRef.current.restoreOriginal();
+        }
+    };
+
     return (
         <div className="relative w-full h-screen bg-[#f0f2f5] overflow-hidden">
             {/* 3D Container */}
@@ -361,6 +297,7 @@ const App: React.FC = () => {
                 language={language}
                 onDismantle={handleDismantle}
                 onRebuild={handleRebuild}
+                onRestore={handleRestore}
                 onNewScene={handleNewScene}
                 onSelectCustomBuild={handleSelectCustomBuild}
                 onSelectCustomRebuild={handleSelectCustomRebuild}
