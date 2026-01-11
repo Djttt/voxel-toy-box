@@ -10,8 +10,12 @@ View your app in AI Studio: https://ai.studio/apps/drive/11PqYm2S-UmUR-5_T_OVgdf
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
+add local ollama server
+```bash
+OLLAMA_ORIGINS="*" ollama serve
+```
 
+**Prerequisites:**  Node.js
 
 1. Install dependencies:
    `npm install`

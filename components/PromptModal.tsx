@@ -26,7 +26,7 @@ export const PromptModal: React.FC<PromptModalProps> = ({ isOpen, mode, onClose,
   // Config State
   const [provider, setProvider] = useState<'gemini' | 'ollama'>('gemini');
   const [ollamaUrl, setOllamaUrl] = useState('http://localhost:11434');
-  const [ollamaModel, setOllamaModel] = useState('llama3');
+  const [ollamaModel, setOllamaModel] = useState('gemini-3-flash-preview:cloud');
 
   const t = TRANSLATIONS[language];
 
@@ -136,7 +136,7 @@ export const PromptModal: React.FC<PromptModalProps> = ({ isOpen, mode, onClose,
                     value={ollamaModel}
                     onChange={(e) => setOllamaModel(e.target.value)}
                     className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-indigo-500 outline-none text-slate-700 font-medium"
-                    placeholder="llama3"
+                    placeholder="gemini-3-flash-preview:cloud"
                   />
                 </div>
                 <div>

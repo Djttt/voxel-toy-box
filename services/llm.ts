@@ -75,7 +75,7 @@ async function generateWithGemini(prompt: string, apiKey: string): Promise<Voxel
 
 async function generateWithOllama(prompt: string, config: GenConfig): Promise<VoxelData[]> {
     const url = `${config.ollamaUrl || 'http://localhost:11434'}/api/chat`;
-    const model = config.ollamaModel || 'llama3';
+    const model = config.ollamaModel || 'gemini-3-flash-preview:cloud';
 
     // Ollama might not support JSON schema enforcement as strictly as Gemini, 
     // so we emphasize JSON in the prompt.
