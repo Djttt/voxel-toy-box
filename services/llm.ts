@@ -44,7 +44,7 @@ async function generateWithGemini(prompt: string, apiKey: string): Promise<Voxel
     if (!apiKey) throw new Error("API Key not found");
 
     const ai = new GoogleGenAI({ apiKey });
-    const model = 'gemini-3.0-flash-exp';
+    const model = 'gemini-3-flash-preview';
 
     const response = await ai.models.generateContent({
         model,
