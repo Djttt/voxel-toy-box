@@ -37,7 +37,7 @@ def list_models():
                     thumb_path = os.path.join(UPLOAD_FOLDER, thumb_filename)
                     thumb_url = None
                     if os.path.exists(thumb_path):
-                        thumb_url = f"{base_url}/api/models/thumbnail/{thumb_filename}"
+                        thumb_url = f"/api/models/thumbnail/{thumb_filename}"
                         
                     files.append({
                         'id': filename,
@@ -143,4 +143,4 @@ def delete_model(model_id):
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5002)
+    app.run(debug=True, port=5002, host='0.0.0.0')
