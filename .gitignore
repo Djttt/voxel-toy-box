@@ -13,6 +13,7 @@ server/stored_models
 dist
 dist-ssr
 *.local
+*.pid
 
 # Editor directories and files
 .vscode/*
